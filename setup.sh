@@ -4,6 +4,7 @@ USERID=$( id -u )
 CHOICE="0"
 DOMAIN=""
 SLAVE=""
+IPDOMAIN=""
 
 
 if [ "$USERID" -ne "0" ]; then
@@ -25,6 +26,7 @@ menu_select() {
 	
 	read -p "Opção padrão[0]: " CHOICE
 	read -p "Dominio: " DOMAIN
+	read -p "IP do domínio: " IPDOMAIN
 
 	case "$CHOICE" in
 		0)
@@ -42,11 +44,19 @@ EOF
 \$ORIGIN $DOMAIN.
 
 @	IN	SOA	ns1.$DOMAIN. adm.$DOMAIN. (
-			$( date +%Y%m%d)01	
+			$( date +%Y%m%d)01	;	SERIAL
+			3600		;	REFRESH
+			1800		;	RETRY
+			604800		;	EXPIRE
+			3600		;	NEGATIVE TTL
+			);
 
+@	IN	NS	ns1.$DOMAIN.
+;@	IN	MX	10 mail.$DOMAIN.
 
+ns1	IN	A	$IPDOMAIN
+;mail	IN	A	xxx.xxx.xxx.xxx	
 
-);
 EOF
 
 			;;
