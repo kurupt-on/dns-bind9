@@ -71,6 +71,7 @@ EOF
 		1)
 			cat > /etc/bind/named.conf.options << EOF
 options {
+	directory "/var/cache/bind";
 	listen-on { localhost; };
 	allow-query { localhost; };
 	listen-on-v6 { none; };
