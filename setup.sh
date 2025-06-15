@@ -2,7 +2,6 @@
 
 USERID=$( id -u )
 DOMAIN=""
-SLAVE=""
 IPDOMAIN=""
 
 
@@ -14,6 +13,8 @@ fi
 update_install() {
 	apt update
 	apt install bind9 bind9-dnsutils -y	
+	echo "nameserver 127.0.0.1" > /etc/resolv.conf
+	clear
 }
 
 menu_select() {
@@ -51,10 +52,7 @@ EOF
 			);
 
 @	IN	NS	ns1.$DOMAIN.
-;@	IN	MX	10 mail.$DOMAIN.
-
 ns1	IN	A	$IPDOMAIN
-;mail	IN	A	xxx.xxx.xxx.xxx	
 
 EOF
 
@@ -91,5 +89,12 @@ EOF
 	esac
 }
 
-#update_install
+clean-bind() {
+	rm /var/cache/bind/*
+	apt remove --purge bind9*
+
+}
+
+clean-bind
+update_install
 menu_select
