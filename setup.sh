@@ -6,10 +6,12 @@ IPDOMAIN=""
 FORWARDER_1IP=""
 FORWARDER_2IP=""
 
-if [ "$USERID" -ne "0" ]; then
-	echo "Execute como root (sudo)"
-	exit 1
-fi
+test-user() {
+	if [ "$USERID" -ne "0" ]; then
+		echo "Execute como root (sudo)"
+		exit 1
+	fi
+}
 
 update_install() {
 	echo "nameserver 8.8.8.8" > /etc/resolv.conf
