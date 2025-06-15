@@ -39,6 +39,15 @@ zone "$DOMAIN" {
 	allow-transfer { none; };
 };
 EOF
+			cat > /etc/bind/named.conf.options << EOF
+options {
+	directory "/var/cache/bind";
+	listen-on-v6 { none; };
+	dnssec-validation auto;
+	recursion no;
+	allow-recursion { none; };
+};
+EOF
 		
 			cat > /var/cache/bind/db.$DOMAIN << EOF
 \$TTL 8h
