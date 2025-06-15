@@ -1,0 +1,60 @@
+#/bin/bash
+
+UID=$( id -u )
+CHOICE="0"
+DOMAIN=""
+SLAVE=""
+
+
+if [ "$UID" -ne "0" ]; then
+	echo "Execute como root (sudo)"
+	exit 1
+fi
+
+update_install() {
+	apt update
+	apt install bind9 bind9-dnsutils -y	
+}
+
+menu_select() {
+	echo "escolha o tipo de servidor DNS."
+	echo "0) Autoritativo"
+	echo "1) Cache"
+	echo "2) Recursivo"
+	echo "3) Encaminhamento"	
+	
+	read -p "Opção padrão[0]: " CHOICE
+	read -p "Dominio: " DOMAIN
+
+	case "$CHOICE" in
+		0)
+			sed -i "23s/any/none/" /etc/bind/named.conf.options
+			cat > /etc/bind/named.conf.local << EOF
+			zone "$DOMAIN" {
+			type master;
+			file "db.$DOMAIN";
+			allow-transfer { none; };
+			};
+			EOF
+			;;
+		*)
+			echo "Opção inválida."
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
