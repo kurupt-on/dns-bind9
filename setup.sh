@@ -87,10 +87,10 @@ EOF
 			read -p "IP para encaminhamento 2: " FORWARDER_2IP
 			cat > /etc/bind/named.conf.options << EOF
 options {
+	directory "/var/cache/bind";
 	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
 	forward only;
-}
-
+};
 
 EOF
 			;;
