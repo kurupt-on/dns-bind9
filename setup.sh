@@ -42,7 +42,7 @@ EOF
 \$ORIGIN $DOMAIN.
 
 @	IN	SOA	ns1.$DOMAIN. adm.$DOMAIN. (
-						
+			$( date +%Y%m%d)01	
 
 
 
