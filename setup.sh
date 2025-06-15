@@ -116,7 +116,7 @@ restart-bind() {
 	fi
 
 }
-
+test-user
 clean-bind
 update_install
 menu_select
