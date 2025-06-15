@@ -1,12 +1,12 @@
-#/bin/bash
+#!/bin/bash
 
-UID=$( id -u )
+USERID=$( id -u )
 CHOICE="0"
 DOMAIN=""
 SLAVE=""
 
 
-if [ "$UID" -ne "0" ]; then
+if [ "$USERID" -ne "0" ]; then
 	echo "Execute como root (sudo)"
 	exit 1
 fi
@@ -30,31 +30,17 @@ menu_select() {
 		0)
 			sed -i "23s/any/none/" /etc/bind/named.conf.options
 			cat > /etc/bind/named.conf.local << EOF
-			zone "$DOMAIN" {
-			type master;
-			file "db.$DOMAIN";
-			allow-transfer { none; };
-			};
-			EOF
+zone "$DOMAIN" {
+	type master;
+	file "db.$DOMAIN";
+	allow-transfer { none; };
+	};
+EOF
 			;;
 		*)
 			echo "Opção inválida."
-
+	esac
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#update_install
+menu_select
