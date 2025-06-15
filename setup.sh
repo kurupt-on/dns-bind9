@@ -3,7 +3,8 @@
 USERID=$( id -u )
 DOMAIN=""
 IPDOMAIN=""
-
+FORWARDER_1IP=""
+FORWARDER_2IP=""
 
 if [ "$USERID" -ne "0" ]; then
 	echo "Execute como root (sudo)"
@@ -22,7 +23,7 @@ menu_select() {
 	echo "0) Autoritativo"
 	echo "1) Cache"
 	echo "2) Encaminhamento"	
-	
+	echo 
 	read -p "Opção padrão[0]: " CHOICE
 
 	case "$CHOICE" in
@@ -30,13 +31,12 @@ menu_select() {
 			
 			read -p "Dominio: " DOMAIN
 			read -p "IP do domínio: " IPDOMAIN
-			sed -i "23s/any/none/" /etc/bind/named.conf.options
 			cat > /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
 	type master;
 	file "db.$DOMAIN";
 	allow-transfer { none; };
-	};
+};
 EOF
 		
 			cat > /var/cache/bind/db.$DOMAIN << EOF
@@ -72,12 +72,12 @@ options {
 EOF
 			;;
 		2)
-			read -p "Domínio de encaminhamento 1: " FOWARDER_1DOMAIN
-			read -p "Domínio de encaminhamento 2: " FOWARDER_2DOMAIN
-			cat >/etc/bind/named.conf.options << EOF
+			read -p "IP para encaminhamento 1: " FORWARDER_1IP
+			read -p "IP para encaminhamento 2: " FORWARDER_2IP
+			cat > /etc/bind/named.conf.options << EOF
 options {
-	fowarders { $FOWARDER_1DOMAIN; $FOWARDER_2DOMAIN; };
-	foward only;
+	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
+	forward only;
 }
 
 
@@ -95,6 +95,16 @@ clean-bind() {
 
 }
 
+restart-bind() {
+	systemctl restart named-service
+	if [ $? -ne "0" ]; then
+		echo "Erro na reinicialização do bind."
+		exit 1
+	fi
+
+}
+
 clean-bind
 update_install
 menu_select
+restart-bind
