@@ -78,7 +78,7 @@ EOF
 			read -p "Domínio de encaminhamento 2: " FOWARDER_2DOMAIN
 			cat >/etc/bind/named.conf.options << EOF
 options {
-	fowarders { $FOWARDER_1DOMAIN; $FOWARDER_2DOMAIN};
+	fowarders { $FOWARDER_1DOMAIN; $FOWARDER_2DOMAIN; };
 	foward only;
 }
 
