@@ -1,7 +1,6 @@
 #!/bin/bash
 
 USERID=$( id -u )
-CHOICE="0"
 DOMAIN=""
 SLAVE=""
 IPDOMAIN=""
@@ -24,11 +23,12 @@ menu_select() {
 	echo "2) Encaminhamento"	
 	
 	read -p "Opção padrão[0]: " CHOICE
-	read -p "Dominio: " DOMAIN
-	read -p "IP do domínio: " IPDOMAIN
 
 	case "$CHOICE" in
 		0)
+			
+			read -p "Dominio: " DOMAIN
+			read -p "IP do domínio: " IPDOMAIN
 			sed -i "23s/any/none/" /etc/bind/named.conf.options
 			cat > /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
@@ -63,7 +63,6 @@ EOF
 		1)
 			cat > /etc/bind/named.conf.options << EOF
 options {
-	directory "/var/cache/bind";
 	listen-on { localhost; };
 	allow-query { localhost; };
 	listen-on-v6 { none; };
@@ -73,8 +72,22 @@ options {
 };
 
 EOF
+			;;
+		2)
+			read -p "Domínio de encaminhamento 1: " FOWARDER_1DOMAIN
+			read -p "Domínio de encaminhamento 2: " FOWARDER_2DOMAIN
+			cat >/etc/bind/named.conf.options << EOF
+options {
+	fowarders { $FOWARDER_1DOMAIN; $FOWARDER_2DOMAIN};
+	foward only;
+}
+
+
+EOF
+			;;
 		*)
 			echo "Opção inválida."
+			exit 1
 	esac
 }
 
