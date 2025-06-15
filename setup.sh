@@ -12,8 +12,9 @@ if [ "$USERID" -ne "0" ]; then
 fi
 
 update_install() {
-	apt update
-	apt install bind9 bind9-dnsutils -y	
+	echo "nameserver 8.8.8.8" > /etc/resolv.conf
+	apt update 
+	apt install bind9 bind9-dnsutils -y 
 	echo "nameserver 127.0.0.1" > /etc/resolv.conf
 	clear
 }
@@ -91,12 +92,12 @@ EOF
 
 clean-bind() {
 	rm /var/cache/bind/*
-	apt remove --purge bind9*
+	apt remove --purge bind9* -y
 
 }
 
 restart-bind() {
-	systemctl restart named-service
+	systemctl restart named.service
 	if [ $? -ne "0" ]; then
 		echo "Erro na reinicialização do bind."
 		exit 1
