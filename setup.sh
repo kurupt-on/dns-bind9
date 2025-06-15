@@ -21,8 +21,7 @@ menu_select() {
 	echo "escolha o tipo de servidor DNS."
 	echo "0) Autoritativo"
 	echo "1) Cache"
-	echo "2) Recursivo"
-	echo "3) Encaminhamento"	
+	echo "2) Encaminhamento"	
 	
 	read -p "Opção padrão[0]: " CHOICE
 	read -p "Dominio: " DOMAIN
@@ -60,6 +59,20 @@ ns1	IN	A	$IPDOMAIN
 EOF
 
 			;;
+		
+		1)
+			cat > /etc/bind/named.conf.options << EOF
+options {
+	directory "/var/cache/bind";
+	listen-on { localhost; };
+	allow-query { localhost; };
+	listen-on-v6 { none; };
+	recursion yes;
+	allow-recursion { localhost; };
+
+};
+
+EOF
 		*)
 			echo "Opção inválida."
 	esac
