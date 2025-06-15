@@ -36,6 +36,19 @@ zone "$DOMAIN" {
 	allow-transfer { none; };
 	};
 EOF
+		
+			cat > /var/cache/bind/db.$DOMAIN << EOF
+\$TTL 8h
+\$ORIGIN $DOMAIN.
+
+@	IN	SOA	ns1.$DOMAIN. adm.$DOMAIN. (
+						
+
+
+
+);
+EOF
+
 			;;
 		*)
 			echo "Opção inválida."
