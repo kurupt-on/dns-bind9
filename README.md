@@ -1,5 +1,8 @@
 # Debian-DNS-BIND9
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/<seu-usuario>/Debian-DNS-BIND9)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Um script Bash para configurar servidores DNS com BIND9 no Debian, com suporte a servidores autoritativo (incluindo zona reversa e slave), cache ou encaminhamento. Este projeto faz parte do meu portfólio para demonstrar habilidades em automação e administração de sistemas Linux.
 
 ## Como Usar
