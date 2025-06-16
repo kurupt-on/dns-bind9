@@ -98,7 +98,7 @@ ns1	IN	A	$IPDOMAIN
 
 EOF
 	echo	
-	echo "Configuração completa."
+	echo "Configuração autoritativa completa."
 	sleep 1	
 
 check_cfg
@@ -118,7 +118,7 @@ options {
 
 EOF
 	echo
-	echo "Configuração finalizada."
+	echo "Configuração de cache finalizada."
 	sleep 1
 }
 
@@ -135,7 +135,7 @@ options {
 
 EOF
 	echo
-	echo "Configuração finalizada."
+	echo "Configuração de encaminhamento finalizada."
 	sleep 1
 }
 
@@ -175,9 +175,17 @@ restart-bind() {
 	systemctl restart named.service
 	sleep 1
 	echo 
-	if [ $? -ne "0" ]; then
-		echo "Erro na reinicialização do bind."
-		exit 1
+	if [ $? -ne 0 ]; then
+        echo "Erro na reinicialização do BIND9. Veja 'journalctl -u named.service'."
+        exit 1
+	fi
+	if [ "$CHOICE" = "0" ]; then
+		echo "Teste com: dig @localhost ns1.$DOMAIN"
+		if [ "$REVERSE_CFG" = "y" ]; then
+			echo "Teste zona reversa com: dig -x $IPDOMAIN"
+		fi
+	else
+		echo "Teste com: dig @localhost google.com"
 	fi
 }
 
