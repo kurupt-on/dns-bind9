@@ -10,6 +10,7 @@ REVERSE_CFG=""
 REVERSE_VARIATION=""
 SLAVE_CFG=""
 IP_SLAVE=""
+IXFR="no"
 
 
 . ./functions.sh

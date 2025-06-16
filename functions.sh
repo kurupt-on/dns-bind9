@@ -25,6 +25,7 @@ choice_0() {
 	if [ "$SLAVE_CFG" = "y" ]; then
 		read -p "IP do servidor slave: " IP_SLAVE
 		ALLOW_TRANSFER="$IP_SLAVE"
+		IXFR="yes"
 	fi
 
 	if [ "$REVERSE_CFG" = "y" ]; then
@@ -76,6 +77,7 @@ options {
 	dnssec-validation auto;
 	recursion no;
 	allow-recursion { none; };
+	provide-ixfr $IXFR;
 };
 EOF
 		
