@@ -14,7 +14,7 @@ Um script Bash para configurar servidores DNS com BIND9 no Debian, com suporte a
 ### 1. Clone o Repositório
 
 ```bash
-git clone https://github.com/kurupt-on/DNS-BIND9-DEBIAN
+git clone https://github.com/kurupt-on/Dns-Bind9
 ```
 
 ### 2. Configurar o Servidor DNS
