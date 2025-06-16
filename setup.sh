@@ -2,8 +2,8 @@
 
 . functions.sh
 
-test-user
+test_user
 clean-bind
-update_install
+update_install_bind
 menu_select
 restart-bind
