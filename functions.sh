@@ -1,11 +1,5 @@
 #!/bin/bash
 
-USERID=$( id -u )
-DOMAIN=""
-IPDOMAIN=""
-FORWARDER_1IP=""
-FORWARDER_2IP=""
-
 test_user() {
 	if [ "$USERID" -ne "0" ]; then
 		echo "Execute como root (sudo)" 
@@ -22,18 +16,61 @@ update_install_bind() {
 }
 
 choice_0() {
-	read -p "Dominio: " DOMAIN
+	read -p "Nome do Dominio: " DOMAIN
 	read -p "IP do domínio: " IPDOMAIN
-	cat > /etc/bind/named.conf.local << EOF
+	read -p "Configurar reverso?: [y|n] " REVERSE_CFG
+	read -p "Configurar slave?: [y|n] " SLAVE_CFG
+
+	if [ "$SLAVE_CFG" -eq "y" ]; then
+		read -p "IP do servidor slave: " IP_SLAVE
+		ALLOW_TRANSFER="$IP_SLAVE"
+	fi
+
+	if [ "$REVERSE_CFG" -eq "y" ]; then
+		REVERSE=$(echo "$IPDOMAIN" | awk -F'.' '{print $3 "." $2 "." $1}')
+		REVERSE_VARIATION=$(echo "$IPDOMAIN" | awk -F'.' '{print $4}')
+
+		cat > /etc/bind/named.conf.local << EOF
+zone "$REVERSE.in-addr.arpa" {
+	type master;
+	file "db.$DOMAIN.rev"
+	allow-tranfer { $ALLOW_TRANSFER; };
+
+}
+EOF
+		cat > /var/cache/bind/db.$DOMAIN << EOF
+\$TTL 8h
+
+@	IN	SOA	ns1.$DOMAIN. adm.$DOMAIN. (
+			$( date +%Y%m%d)01	;	SERIAL
+			3600		;	REFRESH
+			1800		;	RETRY
+			604800		;	EXPIRE
+			3600		;	NEGATIVE TTL
+			);
+
+@	IN	NS	ns1.$DOMAIN.
+ns1	IN	A	$IPDOMAIN
+$REVERSE_VARIATION	IN	PTR	ns1.$DOMAIN.
+
+
+EOF
+
+	fi
+
+	cat >> /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
 	type master;
 	file "db.$DOMAIN";
-	allow-transfer { none; };
+	allow-transfer { $ALLOW_TRANSFER; };
 };
 EOF
+
 	cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
+	listen-on { localhost; };
+	allow-query { localhost; };
 	listen-on-v6 { none; };
 	dnssec-validation auto;
 	recursion no;
