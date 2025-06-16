@@ -1,19 +1,12 @@
-Este repositório contém configurações e scripts para a criação de um DNS server, utilizando o BIND9 no Debian.  
+# Debian-DNS-Bind9
 
-O projéto inclui:
-    -
-    -
-    -
-    -
-    -
-    -
+Este repositório configura um servidor DNS com Bind9 no Debian.
 
-Pré requisitos:
-    - Sistema Operacional: Debian 11 ou superior (testado em Debian 12).
-    - Acesso de SuperUsuário (sudo).
-    - Conexão estável com a internet.
-    - 
+## Como usar
 
-    
-    
+### Pré-requisitos
+- Debian 11 ou superior (testado para Debian 12)
+- Acesso de root (sudo)
+- Conexão estável com internet
+
     
