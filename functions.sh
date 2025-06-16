@@ -1,13 +1,19 @@
 #!/bin/bash
 
-test-user() {
+USERID=$( id -u )
+DOMAIN=""
+IPDOMAIN=""
+FORWARDER_1IP=""
+FORWARDER_2IP=""
+
+test_user() {
 	if [ "$USERID" -ne "0" ]; then
-		echo "Execute como root (sudo)"
+		echo "Execute como root (sudo)" 
 		exit 1
 	fi
 }
 
-update_install() {
+update_install_bind() {
 	echo "nameserver 8.8.8.8" > /etc/resolv.conf
 	apt update 
 	apt install bind9 bind9-dnsutils -y 
@@ -15,27 +21,17 @@ update_install() {
 	clear
 }
 
-menu_select() {
-	echo "escolha o tipo de servidor DNS."
-	echo "0) Autoritativo"
-	echo "1) Cache"
-	echo "2) Encaminhamento"	
-	echo 
-	read -p "Opção padrão[0]: " CHOICE
-
-	case "$CHOICE" in
-		0)
-			
-			read -p "Dominio: " DOMAIN
-			read -p "IP do domínio: " IPDOMAIN
-			cat > /etc/bind/named.conf.local << EOF
+choice_0() {
+	read -p "Dominio: " DOMAIN
+	read -p "IP do domínio: " IPDOMAIN
+	cat > /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
 	type master;
 	file "db.$DOMAIN";
 	allow-transfer { none; };
 };
 EOF
-			cat > /etc/bind/named.conf.options << EOF
+	cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
 	listen-on-v6 { none; };
@@ -45,7 +41,7 @@ options {
 };
 EOF
 		
-			cat > /var/cache/bind/db.$DOMAIN << EOF
+	cat > /var/cache/bind/db.$DOMAIN << EOF
 \$TTL 8h
 \$ORIGIN $DOMAIN.
 
@@ -62,26 +58,29 @@ ns1	IN	A	$IPDOMAIN
 
 EOF
 
-			;;
-		
-		1)
-			cat > /etc/bind/named.conf.options << EOF
+check_cfg
+
+}
+
+choice_1() {
+	cat > /etc/bind/named.conf.options << EOF
 options {
-	directory "/var/cache/bind";
 	listen-on { localhost; };
 	allow-query { localhost; };
 	listen-on-v6 { none; };
 	recursion yes;
+	dnssec-validation auto;
 	allow-recursion { localhost; };
-
 };
 
 EOF
-			;;
-		2)
-			read -p "IP para encaminhamento 1: " FORWARDER_1IP
-			read -p "IP para encaminhamento 2: " FORWARDER_2IP
-			cat > /etc/bind/named.conf.options << EOF
+
+}
+
+choice_2() {
+	read -p "IP para encaminhamento 1: " FORWARDER_1IP
+	read -p "IP para encaminhamento 2: " FORWARDER_2IP
+	cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
 	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
@@ -89,6 +88,28 @@ options {
 };
 
 EOF
+
+}
+
+menu_select() {
+	echo "escolha o tipo de servidor DNS."
+	echo
+	echo "0) Autoritativo"
+	echo "1) Cache"
+	echo "2) Encaminhamento"	
+	echo 
+	read -p "Opção: " CHOICE
+
+	case "$CHOICE" in
+		0)
+			choice_0
+			;;
+		
+		1)
+			choice_1
+			;;
+		2)
+			choice_2
 			;;
 		*)
 			echo "Opção inválida."
@@ -99,7 +120,6 @@ EOF
 clean-bind() {
 	rm /var/cache/bind/*
 	apt remove --purge bind9* -y
-
 }
 
 restart-bind() {
@@ -108,8 +128,13 @@ restart-bind() {
 		echo "Erro na reinicialização do bind."
 		exit 1
 	fi
-
 }
 
-
+check_cfg() {
+	named-checkconf
+	if [ $? -ne "0" ]; then
+		echo "Erro de configuração do bind."
+		exit 1
+	fi
+}
 
