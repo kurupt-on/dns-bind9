@@ -8,7 +8,7 @@ test_user() {
 }
 
 update_install_bind() {
-	echo "Atualizando pacotes e baixando o bind9."
+	echo "Atualizando pacotes e baixando o bind9 mais recente."
 	echo "nameserver 8.8.8.8" > /etc/resolv.conf
 	apt update &>/dev/null
 	apt install bind9 bind9-dnsutils -y  &>/dev/null
@@ -165,9 +165,9 @@ menu_select() {
 }
 
 clean-bind() {
-	echo "Preparando o ambiente."
-	rm -f /var/cache/bind/* &>/dev/null
-	apt remove --purge bind9* -y &>/dev/null
+	echo "Limpando o ambiente."
+	rm -rf /var/cache/bind &>/dev/null
+	apt remove --purge bind9 -y &>/dev/null
 }
 
 restart-bind() {
@@ -195,5 +195,11 @@ check_cfg() {
 		echo "Erro de configuração do bind."
 		exit 1
 	fi
+}
+
+check_pre_extant() {
+	[ -d /etc/bind/ -o -d /var/cache/bind/ ] && echo "Verificado arquivos pré-existentes." 
+	sleep 1
+	clean-bind
 }
 

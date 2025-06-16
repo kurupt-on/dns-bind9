@@ -16,7 +16,7 @@ IXFR="no"
 . ./functions.sh
 
 test_user
-clean-bind
+check_pre_extant
 update_install_bind
 menu_select
 restart-bind
