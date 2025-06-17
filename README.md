@@ -89,8 +89,8 @@ dig @localhost google.com
 
 - `setup.sh`: Script principal que chama as funções.
 - `functions.sh`: Contém as funções de configuração.
-- `LICENSE`: Licença sob qual o script foi submetido.
-- `README.md`: Este arquivo no qual você está lendo.
+- `LICENSE`: Licença sob a qual o projeto está licenciado.
+- `README.md`: Este arquivo de documentação.
 - `db.<domínio>`: Arquivo de zona para o servidor autoritativo.
 - `db.<domínio>.rev`: Arquivo de zona reversa (se configurado).
 
