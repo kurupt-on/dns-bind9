@@ -1,6 +1,6 @@
 # Dns-Bind9
 
-Um script Bash para configurar servidores DNS com BIND9 no Debian, com suporte a servidores autoritativo (incluindo zona reversa e slave), cache ou encaminhamento. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. Não deve ser usado em ambientes de produção.
+Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a servidores autoritativo (incluindo zona reversa e slave), cache ou encaminhamento. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. Não deve ser usado em ambientes de produção.
 
 ## Como Usar
 
