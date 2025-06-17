@@ -53,7 +53,7 @@ dig -x 192.168.55.110
 
 ```
 ;; ANSWER SECTION:
-110.55.168.192.in-addr.arpa. 3600 IN PTR ns1.domain.local.
+110.55.168.192.in-addr.arpa. 28800 IN PTR ns1.domain.local.
 ```
 
 Para cache ou encaminhamento:
