@@ -16,6 +16,7 @@ IXFR="no"
 . ./functions.sh
 
 test_user
+check_net
 check_pre_extant
 update_install_bind
 menu_select

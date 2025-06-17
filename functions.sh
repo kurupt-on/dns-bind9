@@ -19,8 +19,8 @@ update_install_bind() {
 choice_0() {
 	read -p "Nome do Dominio: " DOMAIN
 	read -p "IP do domínio: " IPDOMAIN
-	read -p "Configurar reverso? [y|n] " REVERSE_CFG
-	read -p "Configurar slave? [y|n] " SLAVE_CFG
+	read -p "Configurar reverso? [y p/ sim] " REVERSE_CFG
+	read -p "Configurar slave? [y p/ sim] " SLAVE_CFG
 
 	if [ "$SLAVE_CFG" = "y" ]; then
 		read -p "IP do servidor slave: " IP_SLAVE
@@ -140,7 +140,7 @@ EOF
 }
 
 menu_select() {
-	echo "escolha o tipo de servidor DNS."
+	echo "Escolha o tipo de servidor DNS."
 	echo
 	echo "0) Autoritativo"
 	echo "1) Cache"
@@ -198,8 +198,15 @@ check_cfg() {
 }
 
 check_pre_extant() {
-	[ -d /etc/bind/ -o -d /var/cache/bind/ ] && echo "Verificado arquivos pré-existentes." 
-	sleep 1
-	clean-bind
+	if [ -d /etc/bind/ -o -d /var/cache/bind/ ];then
+		clear
+		echo "Verificado arquivos pré-existentes." 
+		sleep 1
+		clean-bind
+	fi
 }
 
+check_net() {
+	ping -c 1 8.8.8.8 &>/dev/null
+	[ $? -ne 0 ] && echo "Erro de conexção" && exit 1
+}
