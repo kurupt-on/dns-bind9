@@ -75,6 +75,7 @@ options {
 	allow-query { localhost; };
 	listen-on-v6 { none; };
 	dnssec-validation auto;
+	dnssec-enable yes;
 	recursion no;
 	allow-recursion { none; };
 	provide-ixfr $IXFR;
