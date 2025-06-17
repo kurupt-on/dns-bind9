@@ -12,7 +12,6 @@ SLAVE_CFG=""
 IP_SLAVE=""
 IXFR="no"
 
-
 . ./functions.sh
 
 test_user
