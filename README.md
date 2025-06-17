@@ -1,12 +1,12 @@
 # Dns-Bind9
 
-Um script Bash para configurar servidores DNS com BIND9 no Debian, com suporte a servidores autoritativo (incluindo zona reversa e slave), cache ou encaminhamento. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. Não é destinado para uso em ambientes de produção.
+Um script Bash para configurar servidores DNS com BIND9 no Debian, com suporte a servidores autoritativo (incluindo zona reversa e slave), cache ou encaminhamento. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. Não deve ser usadoo em ambientes de produção.
 
 ## Como Usar
 
 ### Pré-requisitos
 
-- Debian 11 ou superior.
+- Debian 11 ou superior (testado no Debian 12).
 - Acesso root (sudo).
 - Conexão à internet.
 - Recomendado: Testar em uma máquina virtual.
@@ -24,7 +24,7 @@ sudo ./setup.sh
 ```
 
 - Escolha o tipo de servidor:
-  - **0**: Autoritativo (insira domínio, IP, e opte por zona reversa ou slave).
+  - **0**: Autoritativo (insira domínio, IP, e opte por zona reversa e/ou slave).
   - **1**: Cache.
   - **2**: Encaminhamento (insira dois IPs de encaminhadores, ex.: `8.8.8.8`, `8.8.4.4`).
 
@@ -75,7 +75,7 @@ dig @localhost google.com
 - Consulte os logs:
 
   ```bash
-  journalctl -u named.service
+  journalctl -r -u named.service
   ```
 
 - Valide a configuração:
