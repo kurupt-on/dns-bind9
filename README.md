@@ -78,6 +78,7 @@ dig @localhost google.com
   journalctl -r -u named.service
   ```
 
+
 - Valide a configuração:
 
   ```bash
