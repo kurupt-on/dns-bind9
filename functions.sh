@@ -160,11 +160,44 @@ EOF
 	sleep 1
 }
 
+check_swp() {
+	[ -e config.swp ] || touch "config.swp"
+}
+
+get_cfg_swp() {
+	check_swp
+	cat config.swp
+}
+
+set_acl() {
+	check_swp
+	clear
+	read -p "Nome da ACL: " ACL_NAME
+	echo "acl \"$ACL_NAME\" {" >> config.swp 
+	echo "Utilize Ctrl+D ao terminar de digitar."
+	echo "Declare quem fará parte da sua ACL. (utilizar \";\" ao final da linha)"
+	while read; do
+		echo "	$REPLY" >> config.swp
+	done
+	echo "};" >> config.swp
+	echo "" >> config.swp
+	clear
+}
+
 choice_E() {
 	clear
-	echo "Aqui você podeŕa definir VIEWs e ACLs."
-	echo
 	until [ "$TERM_EXTRA" = "true" ]; do
+		clear
+		echo "Aqui você poderá definir suas VIEWs e ACLs."
+		echo
+		[ -s config.swp ] && STAT_CFG="* Configurações detectadas." || STAT_CFG="Sem configurações no momento."
+		echo "$STAT_CFG" 
+		echo
+		if [ "$EXTRA_CHOICE" = "M" ]; then
+			if [ "$STAT_CFG" = "* Configurações detectadas." ]; then
+				get_cfg_swp
+			fi
+		fi
 		echo "[M] - Mostrar Views e Acls"
 		echo "[A] - Adionar Acl"
 		echo "[V] - Adcionar View"
@@ -184,7 +217,9 @@ choice_E() {
 				;;
 			S)
 				echo "Saindo do modo extra."
+				clean_extra
 				TERM_EXTRA="true"
+				sleep 1
 				break
 				;;
 			*)
@@ -195,43 +230,47 @@ choice_E() {
 	done;	
 		TERM_EXTRA="false"
 		clear
-		menu_select
 }
 
 menu_select() {
-	echo "Iniciando a configuração do DNS."
-	echo
-	echo "0) Autoritativo"
-	echo "1) Cache"
-	echo "2) Encaminhamento"	
-	echo
-	echo "[E] - Configurações extras"
-	echo "[S] - Sair"
-	echo 
-	read -p "Opção: " CHOICE
-
-	case "$CHOICE" in
-		0)
-			choice_0
-			;;
-		1)
-			choice_1
-			;;
-		2)
-			choice_2
-			;;
-		E)
-			choice_E
-			;;
-		S)
-			echo "Finalizando o script."
-			echo
-			exit 0
-			;;
-		*)
-			echo "Opção inválida."
-			exit 1
-	esac
+	while true; do
+		echo "Iniciando a configuração do DNS."
+		echo
+		echo "0) Autoritativo"
+		echo "1) Cache"
+		echo "2) Encaminhamento"	
+		echo
+		echo "[E] - Configurações extras"
+		echo "[S] - Sair"
+		echo 
+		read -p "Opção: " CHOICE
+		case "$CHOICE" in
+			0)
+				choice_0
+				exit 0
+				;;
+			1)
+				choice_1
+				exit 0
+				;;
+			2)
+				choice_2
+				exit 0
+				;;
+			E)
+				choice_E
+				;;
+			S)
+				echo "Finalizando o script."
+				echo
+				exit 0
+				;;
+			*)
+				echo "Opção inválida."
+				rm -f config.swp &>/dev/null
+				exit 1
+		esac
+	done
 }
 
 clean-bind() {
@@ -240,14 +279,18 @@ clean-bind() {
 	apt remove --purge bind9 -y &>/dev/null
 }
 
+clean_extra() {
+	rm -f config.swp &>/dev/null
+}
+
 restart-bind() {
 	echo "Reiniciando o serviço."
 	systemctl restart named.service
 	sleep 1
 	echo 
 	if [ $? -ne 0 ]; then
-        echo "Erro na reinicialização do BIND9. Veja 'journalctl -u named.service'."
-        exit 1
+		echo "Erro na reinicialização do BIND9. Veja 'journalctl -u named.service'."
+		exit 1
 	fi
 	if [ "$CHOICE" = "0" ]; then
 		echo "Teste com: dig @localhost ns1.$DOMAIN"
@@ -278,5 +321,5 @@ check_pre_extant() {
 
 check_net() {
 	ping -c 1 8.8.8.8 &>/dev/null
-	[ $? -ne 0 ] && echo "Erro de conexção" && exit 1
+	[ $? -ne 0 ] && echo "Erro de conexão" && exit 1
 }
