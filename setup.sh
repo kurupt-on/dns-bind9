@@ -14,6 +14,7 @@ IXFR="no"
 DNSSEC_IN_CACHE=""
 FWD_INT_IN_CACHE=""
 FWD_IN_CACHE=""
+TERM_AVANCED="false"
 
 . ./functions.sh
 

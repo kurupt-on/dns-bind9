@@ -160,8 +160,48 @@ EOF
 	sleep 1
 }
 
+choice_E() {
+	clear
+	echo "Aqui você podeŕa definir VIEWs e ACLs."
+	echo
+	until [ "$TERM_EXTRA" = "true" ]; do
+		echo "[M] - Mostrar Views e Acls"
+		echo "[A] - Adionar Acl"
+		echo "[V] - Adcionar V]ews"
+		echo "[S] - Sair"
+		echo
+		read -p "Opção: " EXTRA_CHOICE
+
+		case "$EXTRA_CHOICE" in
+			M) 
+				get_cfg_swp
+				;;
+			A)
+				set_acl
+				;;
+			V)
+				set_view
+				;;
+			S)
+				echo "Saindo do modo extra."
+				TERM_EXTRA="true"
+				break
+				;;
+			*)
+				echo "Opção inválida."
+				sleep 1
+				choice_E
+		esac
+	done;	
+		TERM_EXTRA="false"
+		clear
+		menu_select
+}
+
 menu_select() {
-	echo "Escolha o tipo de servidor DNS."
+	echo "Iniciando a configuração do DNS."
+	echo
+	echo "E) Configurações extras."
 	echo
 	echo "0) Autoritativo"
 	echo "1) Cache"
@@ -178,6 +218,9 @@ menu_select() {
 			;;
 		2)
 			choice_2
+			;;
+		E)
+			choice_E
 			;;
 		*)
 			echo "Opção inválida."
