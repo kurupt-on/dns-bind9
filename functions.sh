@@ -105,7 +105,7 @@ check_cfg
 }
 
 choice_1() {
-	cat > /etc/bind/named.conf.options << EOF
+		cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
 	listen-on { localhost; };
@@ -114,9 +114,30 @@ options {
 	recursion yes;
 	dnssec-validation auto;
 	allow-recursion { localhost; };
-};
-
 EOF
+	read -p "Configurar encaminhamento? [y p/ sim] " FWD_IN_CACHE
+	if [ "$FWD_IN_CACHE" = "y" ]; then
+		read -p "Configurar para um dominio interno? [y p/ sim] " FWD_INT_IN_CACHE
+		if [ "$FWD_INT_IN_CACHE" != "y" ]; then
+			cat >> /etc/bind/named.conf.options << EOF
+	forwarders { $IPDOMAIN; };
+EOF
+		else
+			read -p "Nome da Dominio: " DOMAIN
+			read -p "IP do Dominio: " IPDOMAIN
+			read -p "O dominio possui DNSSEC? [y p/ sim] " DNSSEC_IN_CACHE
+			if [ "$DNSSEC_IN_CACHE" != "y" ]; then
+				echo "	validate except { "$DOMAIN"; };" >> /etc/bind/named.conf.options
+			fi
+			cat >> /etc/bind/named.conf.local << EOF
+zone "$DOMAIN" {
+	type forward;
+	forwarders { $IPDOMAIN; };
+};
+EOF
+		fi
+	fi
+	echo "};" >> /etc/bind/named.conf.options
 	echo
 	echo "Configuração de cache finalizada."
 	sleep 1

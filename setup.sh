@@ -11,6 +11,9 @@ REVERSE_VARIATION=""
 SLAVE_CFG=""
 IP_SLAVE=""
 IXFR="no"
+DNSSEC_IN_CACHE=""
+FWD_INT_IN_CACHE=""
+FWD_IN_CACHE=""
 
 . ./functions.sh
 
