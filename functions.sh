@@ -127,7 +127,7 @@ EOF
 			read -p "IP do Dominio: " IPDOMAIN
 			read -p "O dominio possui DNSSEC? [y p/ sim] " DNSSEC_IN_CACHE
 			if [ "$DNSSEC_IN_CACHE" != "y" ]; then
-				echo "	validate except { "$DOMAIN"; };" >> /etc/bind/named.conf.options
+				echo "	validate-except { \"$DOMAIN\"; };" >> /etc/bind/named.conf.options
 			fi
 			cat >> /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
