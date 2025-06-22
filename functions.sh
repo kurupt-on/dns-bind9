@@ -167,7 +167,7 @@ choice_E() {
 	until [ "$TERM_EXTRA" = "true" ]; do
 		echo "[M] - Mostrar Views e Acls"
 		echo "[A] - Adionar Acl"
-		echo "[V] - Adcionar V]ews"
+		echo "[V] - Adcionar View"
 		echo "[S] - Sair"
 		echo
 		read -p "Opção: " EXTRA_CHOICE
@@ -201,11 +201,12 @@ choice_E() {
 menu_select() {
 	echo "Iniciando a configuração do DNS."
 	echo
-	echo "E) Configurações extras."
-	echo
 	echo "0) Autoritativo"
 	echo "1) Cache"
 	echo "2) Encaminhamento"	
+	echo
+	echo "[E] - Configurações extras"
+	echo "[S] - Sair"
 	echo 
 	read -p "Opção: " CHOICE
 
@@ -222,6 +223,11 @@ menu_select() {
 		E)
 			choice_E
 			;;
+		S)
+			echo "Finalizando o script."
+			echo
+			exit 0
+			;;
 		*)
 			echo "Opção inválida."
 			exit 1
@@ -230,7 +236,7 @@ menu_select() {
 
 clean-bind() {
 	echo "Limpando o ambiente."
-	rm -rf /var/cache/bind &>/dev/null
+#	rm -rf /var/cache/bind &>/dev/null
 	apt remove --purge bind9 -y &>/dev/null
 }
 
