@@ -41,6 +41,12 @@ zone "$REVERSE.in-addr.arpa" {
 };
 
 EOF
+	sleep 1
+	clear
+	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
+	if [ "$USE_ACL" = "y" ]; then
+		use_acl
+	fi
 
 		cat > /var/cache/bind/db.$DOMAIN.rev << EOF
 \$TTL 8h
@@ -72,8 +78,8 @@ EOF
 	cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
-	listen-on { localhost; };
-	allow-query { localhost; };
+	listen-on { $LISTEN_ON; };
+	allow-query { $ALLOW_QUERY; };
 	listen-on-v6 { none; };
 	dnssec-validation auto;
 	recursion no;
@@ -165,6 +171,31 @@ EOF
 
 check_swp() {
 	[ -e config.swp ] || touch "config.swp"
+}
+
+use_acl() {
+	clear
+	echo "As seguintes ACLs estão configuradas:"
+	get_acl 
+	echo
+	echo "Associe os parametros com os números respectivos das ACLs"
+	echo
+	read -p "listen-on: " LISTEN_ON
+	read -p "allow-query: " ALLOW_QUERY
+	if [ $CHOICE -eq 1 ];then
+		read -p "allow-recursion: " ALLOW_RECURSION
+	fi
+}
+
+get_acl() {
+	GET_ACL=$(grep "acl" /etc/bind/named.conf.options | cut -d "\"" -f 2 | tr '\n' ' ')
+	VAR=1
+	for I in $GET_ACL; do
+		echo "[$VAR] $I"
+		VAR=$(( $VAR + 1 ))
+	done
+	echo "[$VAR] Default  ->  localhost"
+
 }
 
 get_cfg_swp() {
