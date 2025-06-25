@@ -17,6 +17,7 @@ update_install_bind() {
 }
 
 choice_0() {
+	clear
 	read -p "Nome do Dominio: " DOMAIN
 	read -p "IP do domínio: " IPDOMAIN
 	read -p "Configurar reverso? [y p/ sim] " REVERSE_CFG
@@ -37,8 +38,8 @@ zone "$REVERSE.in-addr.arpa" {
 	type master;
 	file "db.$DOMAIN.rev";
 	allow-transfer { $ALLOW_TRANSFER; };
-
 };
+
 EOF
 
 		cat > /var/cache/bind/db.$DOMAIN.rev << EOF
@@ -105,6 +106,7 @@ check_cfg
 }
 
 choice_1() {
+	clear
 		cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
@@ -119,6 +121,7 @@ EOF
 	if [ "$FWD_IN_CACHE" = "y" ]; then
 		read -p "Configurar para um dominio interno? [y p/ sim] " FWD_INT_IN_CACHE
 		if [ "$FWD_INT_IN_CACHE" != "y" ]; then
+			read -p "IP para encaminhamento: " IPDOMAIN
 			cat >> /etc/bind/named.conf.options << EOF
 	forwarders { $IPDOMAIN; };
 EOF
@@ -177,7 +180,6 @@ get_cfg_swp() {
 		read -p "Pressione [q] para sair: " CHOICE_3
 		sleep 1
 	done
-
 }
 
 set_acl() {
@@ -192,25 +194,35 @@ set_acl() {
 	done
 	echo "};" >> config.swp
 	echo "" >> config.swp
+
 }
 
 set_view() {
 	[ "$VIEW" = "Habilitar" ] && VIEW="Desabilitar" || VIEW="Habilitar"
 }
 
+set_cfg_swp() {
+	[ -s config.swp ] && cat config.swp > /etc/bind/named.conf.options && ACL_ON="1"
+	[ "$VIEW" = "Habilitar" ]  && VIEW_ON="0" || VIEW_ON="1"
+	echo "Saindo do modo extra e salvando as configurações."
+	sleep 1
+	menu_select
+}
+
 choice_E() {
 	clear
-	until [ "$TERM_EXTRA" = "true" ]; do
+	while true; do
 		clear
 		echo "Configurações Extras."
 		echo
-		[ -s config.swp ] && STAT_CFG="* Configurações detectadas." || STAT_CFG="Sem configurações no momento."
+		[ -s config.swp -o "$VIEW" = "Desabilitar" ] && STAT_CFG="* Configurações detectadas." || STAT_CFG="Sem configurações no momento."
 		echo "$STAT_CFG" 
 		echo
-		echo "[M] - Mostrar modificações"
+		echo "[M] - Mostrar Modificações"
 		echo "[A] - Adionar Acl"
 		echo "[V] - $VIEW View"
-		echo "[S] - Sair"
+		echo "[W] - Sair e Salvar"
+		echo "[S] - Sair sem Salvar"
 		echo
 		read -p "Opção: " EXTRA_CHOICE
 
@@ -225,11 +237,13 @@ choice_E() {
 				set_view
 				;;
 			S)
-				echo "Saindo do modo extra."
+				echo "Saindo do modo extra sem salvar."
 				clean_extra
-				TERM_EXTRA="true"
 				sleep 1
 				menu_select
+				;;
+			W)
+				set_cfg_swp
 				;;
 			*)
 				echo "Opção inválida."
@@ -272,13 +286,13 @@ menu_select() {
 				;;
 			S)
 				echo "Finalizando o script."
+				sleep 1
 				echo
 				exit 0
 				;;
 			*)
 				echo "Opção inválida."
-				rm -f config.swp &>/dev/null
-				exit 1
+				sleep 1
 		esac
 	done
 }
