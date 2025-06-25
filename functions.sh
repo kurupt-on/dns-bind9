@@ -165,8 +165,19 @@ check_swp() {
 }
 
 get_cfg_swp() {
-	check_swp
-	cat config.swp
+	CHOICE_3=""
+	clear
+	echo "Modificações feitas:"
+	echo
+	[ -s config.swp ] && cat config.swp || echo "Sem ACLs configuradas." 
+	printf "Status de VIEW: "
+	[ "$VIEW" = "Habilitar" ] && echo "Desabilitado" || echo "Habilitado"
+	echo
+	while [ "$CHOICE_3" != "q" ]; do
+		read -p "Pressione [q] para sair: " CHOICE_3
+		sleep 1
+	done
+
 }
 
 set_acl() {
@@ -181,26 +192,24 @@ set_acl() {
 	done
 	echo "};" >> config.swp
 	echo "" >> config.swp
-	clear
+}
+
+set_view() {
+	[ "$VIEW" = "Habilitar" ] && VIEW="Desabilitar" || VIEW="Habilitar"
 }
 
 choice_E() {
 	clear
 	until [ "$TERM_EXTRA" = "true" ]; do
 		clear
-		echo "Aqui você poderá definir suas VIEWs e ACLs."
+		echo "Configurações Extras."
 		echo
 		[ -s config.swp ] && STAT_CFG="* Configurações detectadas." || STAT_CFG="Sem configurações no momento."
 		echo "$STAT_CFG" 
 		echo
-		if [ "$EXTRA_CHOICE" = "M" ]; then
-			if [ "$STAT_CFG" = "* Configurações detectadas." ]; then
-				get_cfg_swp
-			fi
-		fi
-		echo "[M] - Mostrar Views e Acls"
+		echo "[M] - Mostrar modificações"
 		echo "[A] - Adionar Acl"
-		echo "[V] - Adcionar View"
+		echo "[V] - $VIEW View"
 		echo "[S] - Sair"
 		echo
 		read -p "Opção: " EXTRA_CHOICE
@@ -220,7 +229,7 @@ choice_E() {
 				clean_extra
 				TERM_EXTRA="true"
 				sleep 1
-				break
+				menu_select
 				;;
 			*)
 				echo "Opção inválida."
@@ -233,6 +242,7 @@ choice_E() {
 }
 
 menu_select() {
+	clear
 	while true; do
 		echo "Iniciando a configuração do DNS."
 		echo
