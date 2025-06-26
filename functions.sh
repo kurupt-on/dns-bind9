@@ -41,12 +41,6 @@ zone "$REVERSE.in-addr.arpa" {
 };
 
 EOF
-	sleep 1
-	clear
-	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
-	if [ "$USE_ACL" = "y" ]; then
-		use_acl
-	fi
 
 		cat > /var/cache/bind/db.$DOMAIN.rev << EOF
 \$TTL 8h
@@ -66,6 +60,13 @@ $REVERSE_VARIATION	IN	PTR	ns1.$DOMAIN.
 EOF
 
 	fi
+	sleep 1
+	clear
+	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
+	if [ "$USE_ACL" = "y" ]; then
+		use_acl
+	fi
+
 
 	cat >> /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
@@ -75,11 +76,11 @@ zone "$DOMAIN" {
 };
 EOF
 
-	cat > /etc/bind/named.conf.options << EOF
+	cat >> /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
-	listen-on { $LISTEN_ON; };
-	allow-query { $ALLOW_QUERY; };
+	listen-on { "$LISTEN_ON"; };
+	allow-query { "$ALLOW_QUERY"; };
 	listen-on-v6 { none; };
 	dnssec-validation auto;
 	recursion no;
@@ -107,7 +108,7 @@ EOF
 	echo	
 	echo "Configuração autoritativa completa."
 	sleep 1	
-
+	rm -f config.swp 
 check_cfg
 }
 
@@ -178,23 +179,24 @@ use_acl() {
 	echo "As seguintes ACLs estão configuradas:"
 	get_acl 
 	echo
-	echo "Associe os parametros com os números respectivos das ACLs"
+	echo "Associe os parametros com os números respectivos das ACLs."
 	echo
 	read -p "listen-on: " LISTEN_ON
 	read -p "allow-query: " ALLOW_QUERY
-	if [ $CHOICE -eq 1 ];then
-		read -p "allow-recursion: " ALLOW_RECURSION
-	fi
+	
+	[ $LISTEN_ON -eq $VAR ] && LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $VAR) || LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $LISTEN_ON )
+	[ $ALLOW_QUERY -eq $VAR ] && ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $ALLOW_QUERY )
 }
 
 get_acl() {
 	GET_ACL=$(grep "acl" /etc/bind/named.conf.options | cut -d "\"" -f 2 | tr '\n' ' ')
 	VAR=1
 	for I in $GET_ACL; do
-		echo "[$VAR] $I"
+		printf "[$VAR] $I"
+		[ "$I" != "Default" ] && printf "\n"
 		VAR=$(( $VAR + 1 ))
 	done
-	echo "[$VAR] Default  ->  localhost"
+	echo "  ->  localhost only"
 
 }
 
@@ -235,6 +237,12 @@ set_view() {
 set_cfg_swp() {
 	[ -s config.swp ] && cat config.swp > /etc/bind/named.conf.options && ACL_ON="1"
 	[ "$VIEW" = "Habilitar" ]  && VIEW_ON="0" || VIEW_ON="1"
+	cat >> /etc/bind/named.conf.options << EOF
+acl "Default" {
+	localhost;
+};
+
+EOF
 	echo "Saindo do modo extra e salvando as configurações."
 	sleep 1
 	menu_select

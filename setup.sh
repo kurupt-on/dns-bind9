@@ -25,4 +25,5 @@ check_net
 check_pre_extant
 update_install_bind
 menu_select
+clean_extra
 restart-bind
