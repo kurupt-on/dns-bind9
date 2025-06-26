@@ -116,15 +116,22 @@ check_cfg
 
 choice_1() {
 	clear
-		cat > /etc/bind/named.conf.options << EOF
+	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim] " USE_ACL
+	if [ "$USE_ACL" = "y" ]; then
+		use_acl
+	else
+		> /etc/bind/named.conf.options
+	fi
+
+		cat >> /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
-	listen-on { localhost; };
-	allow-query { localhost; };
+	listen-on { "$LISTEN_ON"; };
+	allow-query { "$ALLOW_QUERY"; };
 	listen-on-v6 { none; };
 	recursion yes;
 	dnssec-validation auto;
-	allow-recursion { localhost; };
+	allow-recursion { "$ALLOW_RECURSION"; };
 EOF
 	read -p "Configurar encaminhamento? [y p/ sim] " FWD_IN_CACHE
 	if [ "$FWD_IN_CACHE" = "y" ]; then
@@ -156,18 +163,29 @@ EOF
 }
 
 choice_2() {
-	echo
-	read -p "IP para encaminhamento 1: " FORWARDER_1IP
-	read -p "IP para encaminhamento 2: " FORWARDER_2IP
-	cat > /etc/bind/named.conf.options << EOF
+	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim] " USE_ACL
+	if [ "$USE_ACL" = "y" ]; then
+		use_acl
+		cat > /etc/bind/named.conf.options << EOF
+options {
+	directory "/var/cache/bind";
+	forwarders { "$FORWARDERS"; };
+	forward only;
+};
+EOF
+
+	else
+		read -p "IP para encaminhamento 1: " FORWARDER_1IP
+		read -p "IP para encaminhamento 2: " FORWARDER_2IP
+		cat > /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
 	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
 	forward only;
 };
-
 EOF
-	echo
+	fi
+		echo
 	echo "Configuração de encaminhamento finalizada."
 	sleep 1
 }
@@ -183,11 +201,22 @@ use_acl() {
 	echo
 	echo "Associe os parametros com os números respectivos das ACLs."
 	echo
-	read -p "listen-on: " LISTEN_ON
-	read -p "allow-query: " ALLOW_QUERY
-	
-	[ $LISTEN_ON -eq $VAR ] && LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $VAR) || LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $LISTEN_ON )
-	[ $ALLOW_QUERY -eq $VAR ] && ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $ALLOW_QUERY )
+
+	if [ $CHOICE -ne 2 ]; then
+		read -p "listen-on: " LISTEN_ON
+		read -p "allow-query: " ALLOW_QUERY
+		[ $LISTEN_ON -eq $VAR ] && LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $VAR) || LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $LISTEN_ON )
+		[ $ALLOW_QUERY -eq $VAR ] && ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $ALLOW_QUERY )
+
+		if [ $CHOICE -eq 1 ]; then
+			read -p "allow-recursion: " ALLOW_RECURSION
+			[ $ALLOW_RECURSION -eq $VAR ] && ALLOW_RECURSION=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_RECURSION=$( echo $GET_ACL | cut -d " " -f $ALLOW_RECURSION )
+		fi
+	else
+		read -p "forwarders: " FORWARDERS
+		[ $FORWARDERS -eq $VAR ] && FORWARDERS=$( echo $GET_ACL | cut -d " " -f $VAR) || FORWARDERS=$( echo $GET_ACL | cut -d " " -f $FORWARDERS )
+	fi
+	clean_extra
 }
 
 get_acl() {

@@ -5,6 +5,7 @@ DOMAIN=""
 IPDOMAIN=""
 FORWARDER_1IP=""
 FORWARDER_2IP=""
+FORWARDERS=""
 ALLOW_TRANSFER="none"
 REVERSE_CFG=""
 REVERSE_VARIATION=""
@@ -19,6 +20,7 @@ VIEW="Habilitar"
 ACL_ON=0
 LISTEN_ON="localhost"
 ALLOW_QUERY="localhost"
+ALLOW_RECURSION="localhost"
 
 
 . ./functions.sh
@@ -28,5 +30,4 @@ check_net
 check_pre_extant
 update_install_bind
 menu_select
-clean_extra
 restart-bind
