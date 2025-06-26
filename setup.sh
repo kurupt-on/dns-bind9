@@ -16,6 +16,9 @@ FWD_INT_IN_CACHE=""
 FWD_IN_CACHE=""
 TERM_EXTRA="false"
 VIEW="Habilitar"
+ACL_ON=0
+LISTEN_ON="localhost"
+ALLOW_QUERY="localhost"
 
 
 . ./functions.sh

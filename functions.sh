@@ -65,6 +65,8 @@ EOF
 	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
 	if [ "$USE_ACL" = "y" ]; then
 		use_acl
+	else
+		> /etc/bind/named.conf.options
 	fi
 
 
@@ -338,7 +340,7 @@ menu_select() {
 
 clean-bind() {
 	echo "Limpando o ambiente."
-#	rm -rf /var/cache/bind &>/dev/null
+	rm -rf /var/cache/bind &>/dev/null
 	apt remove --purge bind9 -y &>/dev/null
 }
 
