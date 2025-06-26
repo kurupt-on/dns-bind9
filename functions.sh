@@ -17,11 +17,13 @@ update_install_bind() {
 }
 
 choice_0() {
+	
+	use_init_view
 	clear
 	read -p "Nome do Dominio: " DOMAIN
 	read -p "IP do domínio: " IPDOMAIN
-	read -p "Configurar reverso? [y p/ sim] " REVERSE_CFG
-	read -p "Configurar slave? [y p/ sim] " SLAVE_CFG
+	read -p "Configurar reverso?	[y p/ sim] " REVERSE_CFG
+	read -p "Configurar slave? 	[y p/ sim] " SLAVE_CFG
 
 	if [ "$SLAVE_CFG" = "y" ]; then
 		read -p "IP do servidor slave: " IP_SLAVE
@@ -33,7 +35,7 @@ choice_0() {
 		REVERSE=$(echo "$IPDOMAIN" | awk -F'.' '{print $3 "." $2 "." $1}')
 		REVERSE_VARIATION=$(echo "$IPDOMAIN" | awk -F'.' '{print $4}')
 
-		cat > /etc/bind/named.conf.local << EOF
+		cat >> /etc/bind/named.conf.local << EOF
 zone "$REVERSE.in-addr.arpa" {
 	type master;
 	file "db.$DOMAIN.rev";
@@ -61,14 +63,13 @@ EOF
 
 	fi
 	sleep 1
-	clear
-	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
-	if [ "$USE_ACL" = "y" ]; then
-		use_acl
-	else
-		> /etc/bind/named.conf.options
+	USE_ACL=""
+	if [ $ACL_ON -eq 1 -a $VIEW_ON -eq 0 ]; then 
+		if [ "$USE_ACL" = "y" ]; then
+			use_acl
+		fi
 	fi
-
+	> /etc/bind/named.conf.options
 
 	cat >> /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
@@ -81,8 +82,8 @@ EOF
 	cat >> /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
-	listen-on { "$LISTEN_ON"; };
-	allow-query { "$ALLOW_QUERY"; };
+	listen-on { $LISTEN_ON; };
+	allow-query { $ALLOW_QUERY; };
 	listen-on-v6 { none; };
 	dnssec-validation auto;
 	recursion no;
@@ -111,6 +112,7 @@ EOF
 	echo "Configuração autoritativa completa."
 	sleep 1	
 	rm -f config.swp 
+use_end_view
 check_cfg
 }
 
@@ -126,12 +128,12 @@ choice_1() {
 		cat >> /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
-	listen-on { "$LISTEN_ON"; };
-	allow-query { "$ALLOW_QUERY"; };
+	listen-on { $LISTEN_ON; };
+	allow-query { $ALLOW_QUERY; };
 	listen-on-v6 { none; };
 	recursion yes;
 	dnssec-validation auto;
-	allow-recursion { "$ALLOW_RECURSION"; };
+	allow-recursion { $ALLOW_RECURSION; };
 EOF
 	read -p "Configurar encaminhamento? [y p/ sim] " FWD_IN_CACHE
 	if [ "$FWD_IN_CACHE" = "y" ]; then
@@ -163,27 +165,26 @@ EOF
 }
 
 choice_2() {
-	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim] " USE_ACL
-	if [ "$USE_ACL" = "y" ]; then
-		use_acl
-		cat > /etc/bind/named.conf.options << EOF
-options {
-	directory "/var/cache/bind";
-	forwarders { "$FORWARDERS"; };
-	forward only;
-};
-EOF
-
-	else
-		read -p "IP para encaminhamento 1: " FORWARDER_1IP
-		read -p "IP para encaminhamento 2: " FORWARDER_2IP
-		cat > /etc/bind/named.conf.options << EOF
+	clear
+	read -p "IP para encaminhamento 1: " FORWARDER_1IP
+	read -p "IP para encaminhamento 2: " FORWARDER_2IP
+	echo
+	cat >> /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
 	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
 	forward only;
+EOF
+	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar?	[y p/ sim] " USE_ACL
+	if [ "$USE_ACL" = "y" ]; then
+		use_acl
+		cat >> /etc/bind/named.conf.options << EOF
+	allow-query { $ALLOW_QUERY; };
 };
 EOF
+	else
+		echo "};" >> /etc/bind/named.conf.options
+		clean_extra
 	fi
 		echo
 	echo "Configuração de encaminhamento finalizada."
@@ -192,6 +193,16 @@ EOF
 
 check_swp() {
 	[ -e config.swp ] || touch "config.swp"
+	grep "Default" config.swp
+	ACL_DEFAULT_ON=$( echo $? )
+	clear
+	[ $ACL_DEFAULT_ON -eq 0 ] || read -p "Deseja adcionar a ACL \"Default\"  ->  localhost only. [y p/ sim] " ACL_DEFAULT
+	[ $ACL_DEFAULT = "y" ] && cat >> config.swp << EOF
+acl "Default" {
+	localhost;
+};
+EOF
+	ACL_DEFAULT=""
 }
 
 use_acl() {
@@ -205,6 +216,10 @@ use_acl() {
 	if [ $CHOICE -ne 2 ]; then
 		read -p "listen-on: " LISTEN_ON
 		read -p "allow-query: " ALLOW_QUERY
+		if [ $VIEW_ON -eq 1 ]; then
+			read -p "match-clients: " MATCH_CLIENTS 
+			[ $MATCH_CLIENTS -eq $VAR ] && MATCH_CLIENTS=$( echo $GET_ACL | cut -d " " -f $VAR) || MATCH_CLIENTS=$( echo $GET_ACL | cut -d " " -f $MATCH_CLIENTS )
+		fi
 		[ $LISTEN_ON -eq $VAR ] && LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $VAR) || LISTEN_ON=$( echo $GET_ACL | cut -d " " -f $LISTEN_ON )
 		[ $ALLOW_QUERY -eq $VAR ] && ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $ALLOW_QUERY )
 
@@ -213,10 +228,34 @@ use_acl() {
 			[ $ALLOW_RECURSION -eq $VAR ] && ALLOW_RECURSION=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_RECURSION=$( echo $GET_ACL | cut -d " " -f $ALLOW_RECURSION )
 		fi
 	else
-		read -p "forwarders: " FORWARDERS
-		[ $FORWARDERS -eq $VAR ] && FORWARDERS=$( echo $GET_ACL | cut -d " " -f $VAR) || FORWARDERS=$( echo $GET_ACL | cut -d " " -f $FORWARDERS )
+		read -p "allow-query: " ALLOW_QUERY
+		[ $ALLOW_QUERY -eq $VAR ] && ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $VAR) || ALLOW_QUERY=$( echo $GET_ACL | cut -d " " -f $ALLOW_QUERY )
 	fi
 	clean_extra
+}
+
+use_init_view() {
+	if [ $VIEW_ON -eq 1 ]; then
+		clear
+		echo "Configurado para utilizar VIEWs."
+		echo
+		read -p "Nome da VIEW: " VIEW_NAME
+		[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
+		if [ "$USE_ACL" = "y" ]; then
+			use_acl
+		fi
+		
+		cat > '/etc/bind/named.conf.local' << EOF
+view "$VIEW_NAME" {
+	match-clients { "$MATCH_CLIENTS"; };
+	listen-on { "$LISTEN_ON"; };
+	allow-query { "$ALLOW_QUERY"; };
+EOF
+	fi
+}
+
+use_end_view() {
+	[ $VIEW_ON -eq 1 ] && echo "};" >> /etc/bind/named.conf.local
 }
 
 get_acl() {
@@ -224,10 +263,10 @@ get_acl() {
 	VAR=1
 	for I in $GET_ACL; do
 		printf "[$VAR] $I"
-		[ "$I" != "Default" ] && printf "\n"
+		[ "$I" = "Default" ] && printf "  ->  localhost only"
+		printf "\n"
 		VAR=$(( $VAR + 1 ))
 	done
-	echo "  ->  localhost only"
 
 }
 
@@ -268,15 +307,8 @@ set_view() {
 set_cfg_swp() {
 	[ -s config.swp ] && cat config.swp > /etc/bind/named.conf.options && ACL_ON="1"
 	[ "$VIEW" = "Habilitar" ]  && VIEW_ON="0" || VIEW_ON="1"
-	cat >> /etc/bind/named.conf.options << EOF
-acl "Default" {
-	localhost;
-};
-
-EOF
 	echo "Saindo do modo extra e salvando as configurações."
 	sleep 1
-	menu_select
 }
 
 choice_E() {
@@ -310,10 +342,11 @@ choice_E() {
 				echo "Saindo do modo extra sem salvar."
 				clean_extra
 				sleep 1
-				menu_select
+				break
 				;;
 			W)
 				set_cfg_swp
+				break
 				;;
 			*)
 				echo "Opção inválida."
@@ -341,15 +374,15 @@ menu_select() {
 		case "$CHOICE" in
 			0)
 				choice_0
-				exit 0
+				break
 				;;
 			1)
 				choice_1
-				exit 0
+				break
 				;;
 			2)
 				choice_2
-				exit 0
+				break
 				;;
 			E)
 				choice_E
@@ -377,7 +410,7 @@ clean_extra() {
 	rm -f config.swp &>/dev/null
 }
 
-restart-bind() {
+restart_bind() {
 	echo "Reiniciando o serviço."
 	systemctl restart named.service
 	sleep 1
