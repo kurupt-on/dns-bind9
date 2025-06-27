@@ -82,8 +82,6 @@ EOF
 	cat >> /etc/bind/named.conf.options << EOF
 options {
 	directory "/var/cache/bind";
-	listen-on { $LISTEN_ON; };
-	allow-query { $ALLOW_QUERY; };
 	listen-on-v6 { none; };
 	dnssec-validation auto;
 	recursion no;
@@ -91,6 +89,12 @@ options {
 	provide-ixfr $IXFR;
 };
 EOF
+	if [ "$VIEW_ON" -ne 1 ]; then
+			cat >> /etc/bind/named.conf.options << EOF
+listen-on { $LISTEN_ON; };
+allow-query { $ALLOW_QUERY; };
+EOF
+	fi
 		
 	cat > /var/cache/bind/db.$DOMAIN << EOF
 \$TTL 8h
@@ -135,9 +139,9 @@ options {
 	dnssec-validation auto;
 	allow-recursion { $ALLOW_RECURSION; };
 EOF
-	read -p "Configurar encaminhamento? [y p/ sim] " FWD_IN_CACHE
+	read -p "Configurar encaminhamento? 		[y p/ sim] " FWD_IN_CACHE
 	if [ "$FWD_IN_CACHE" = "y" ]; then
-		read -p "Configurar para um dominio interno? [y p/ sim] " FWD_INT_IN_CACHE
+		read -p "Configurar para um dominio interno?	[y p/ sim] " FWD_INT_IN_CACHE
 		if [ "$FWD_INT_IN_CACHE" != "y" ]; then
 			read -p "IP para encaminhamento: " IPDOMAIN
 			cat >> /etc/bind/named.conf.options << EOF
@@ -146,7 +150,7 @@ EOF
 		else
 			read -p "Nome da Dominio: " DOMAIN
 			read -p "IP do Dominio: " IPDOMAIN
-			read -p "O dominio possui DNSSEC? [y p/ sim] " DNSSEC_IN_CACHE
+			read -p "O dominio possui DNSSEC? 		[y p/ sim] " DNSSEC_IN_CACHE
 			if [ "$DNSSEC_IN_CACHE" != "y" ]; then
 				echo "	validate-except { \"$DOMAIN\"; };" >> /etc/bind/named.conf.options
 			fi
@@ -201,6 +205,7 @@ check_swp() {
 acl "Default" {
 	localhost;
 };
+
 EOF
 	ACL_DEFAULT=""
 }
