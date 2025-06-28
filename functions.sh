@@ -71,6 +71,8 @@ EOF
 		else
 			> /etc/bind/named.conf.options
 		fi
+	else
+			> /etc/bind/named.conf.options
 	fi
 
 	cat >> /etc/bind/named.conf.local << EOF

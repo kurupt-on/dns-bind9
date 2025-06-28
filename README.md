@@ -1,6 +1,6 @@
 # Dns-Bind9
 
-Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a servidores autoritativo (com zona reversa, slave e views), cache (com encaminhamento opcional) e encaminhamento. Inclue configurações de ACLs para controle de acesso. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. **Não deve ser usado em ambientes de produção.**
+Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a servidores autoritativo (com zona reversa, slave e views), cache (com encaminhamento opcional) e encaminhamento. Inclue configurações de ACLs para controle de acesso. **Este projeto não é destinado para ambientes de produção.**
 
 ## Como Usar
 
@@ -28,6 +28,8 @@ sudo ./setup.sh
   - **0**: Autoritativo (insira domínio, IP, e opte por zona reversa, slave, views e ACLs).
   - **1**: Cache (opte por encaminhamento, dominio interno, DNSSEC e ACLs).
   - **2**: Encaminhamento (insira dois IPs de encaminhadores, ex.: `8.8.8.8`, `8.8.4.4`, e opter por ACLs).
+
+- Opcional: 
   - **E**: Configurações extras (adcionar ACLs ou habilitar/desabilitar views).
   - **S**: Sair.
 
@@ -39,11 +41,11 @@ Para autoritativo:
 dig ns1.<seu-domínio>
 ```
 
-**Saída esperada** (exemplo para `ns1.domain.local`):
+**Saída esperada** (exemplo para `ns1.domain.lan`):
 
 ```
 ;; ANSWER SECTION:
-ns1.domain.local. 3600 IN A 192.168.55.110
+ns1.domain.lan. 28800 IN A 192.168.55.110
 ```
 
 Se configurou zona reversa:
@@ -56,7 +58,7 @@ dig -x 192.168.55.110
 
 ```
 ;; ANSWER SECTION:
-110.55.168.192.in-addr.arpa. 3600 IN PTR ns1.domain.local.
+110.55.168.192.in-addr.arpa. 28800 IN PTR ns1.domain.lan.
 ```
 
 Para cache ou encaminhamento:
@@ -101,4 +103,4 @@ dig @localhost google.com
 
 ## Licença
 
-Este projeto está licenciado sob a [Licença MIT] (LICENSE).
+Este projeto está licenciado sob a Licença MIT.
