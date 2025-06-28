@@ -422,7 +422,7 @@ menu_select() {
 
 clean-bind() {
 	echo "Limpando o ambiente."
-	rm -rf /var/cache/bind &>/dev/null
+	rm -f /var/cache/bind/* &>/dev/null
 	apt remove --purge bind9 -y &>/dev/null
 }
 

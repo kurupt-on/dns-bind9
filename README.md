@@ -1,6 +1,6 @@
 # Dns-Bind9
 
-Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a servidores autoritativo (incluindo zona reversa e slave), cache ou encaminhamento. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. Não deve ser usado em ambientes de produção.
+Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a servidores autoritativo (com zona reversa, slave e views), cache (com encaminhamento opcional) e encaminhamento. Inclue configurações de ACLs para controle de acesso. Este projeto é destinado a demonstrar habilidades em automação e administração de sistemas Linux. **Não deve ser usado em ambientes de produção.**
 
 ## Como Usar
 
@@ -15,6 +15,7 @@ Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a
 
 ```bash
 git clone https://github.com/kurupt-on/Dns-Bind9
+cd Dns-Bind9
 ```
 
 ### 2. Configurar o Servidor DNS
@@ -24,9 +25,11 @@ sudo ./setup.sh
 ```
 
 - Escolha o tipo de servidor:
-  - **0**: Autoritativo (insira domínio, IP, e opte por zona reversa e/ou slave).
-  - **1**: Cache.
-  - **2**: Encaminhamento (insira dois IPs de encaminhadores, ex.: `8.8.8.8`, `8.8.4.4`).
+  - **0**: Autoritativo (insira domínio, IP, e opte por zona reversa, slave, views e ACLs).
+  - **1**: Cache (opte por encaminhamento, dominio interno, DNSSEC e ACLs).
+  - **2**: Encaminhamento (insira dois IPs de encaminhadores, ex.: `8.8.8.8`, `8.8.4.4`, e opter por ACLs).
+  - **E**: Configurações extras (adcionar ACLs ou habilitar/desabilitar views).
+  - **S**: Sair.
 
 ### 3. Testar
 
@@ -40,7 +43,7 @@ dig ns1.<seu-domínio>
 
 ```
 ;; ANSWER SECTION:
-ns1.domain.local. 28800 IN A 192.168.55.110
+ns1.domain.local. 3600 IN A 192.168.55.110
 ```
 
 Se configurou zona reversa:
@@ -53,7 +56,7 @@ dig -x 192.168.55.110
 
 ```
 ;; ANSWER SECTION:
-110.55.168.192.in-addr.arpa. 28800 IN PTR ns1.domain.local.
+110.55.168.192.in-addr.arpa. 3600 IN PTR ns1.domain.local.
 ```
 
 Para cache ou encaminhamento:
@@ -90,11 +93,12 @@ dig @localhost google.com
 
 - `setup.sh`: Script principal que chama as funções.
 - `functions.sh`: Contém as funções de configuração.
-- `LICENSE`: Licença sob a qual o projeto está licenciado.
+- `LICENSE`: Licensa do projeto (MIT).
 - `README.md`: Este arquivo de documentação.
+- `config.swp`: Arquivo temporáio para ACLs.
 - `db.<domínio>`: Arquivo de zona para o servidor autoritativo.
 - `db.<domínio>.rev`: Arquivo de zona reversa (se configurado).
 
 ## Licença
 
-Este projeto está licenciado sob a Licença MIT.
+Este projeto está licenciado sob a [Licença MIT] (LICENSE).
