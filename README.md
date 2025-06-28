@@ -97,7 +97,7 @@ dig @localhost google.com
 - `functions.sh`: Contém as funções de configuração.
 - `LICENSE`: Licensa do projeto (MIT).
 - `README.md`: Este arquivo de documentação.
-- `config.swp`: Arquivo temporáio para ACLs.
+- `config.swp`: Arquivo temporário para ACLs.
 - `db.<domínio>`: Arquivo de zona para o servidor autoritativo.
 - `db.<domínio>.rev`: Arquivo de zona reversa (se configurado).
 
