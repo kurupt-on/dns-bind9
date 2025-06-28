@@ -65,11 +65,13 @@ EOF
 	sleep 1
 	USE_ACL=""
 	if [ $ACL_ON -eq 1 -a $VIEW_ON -eq 0 ]; then 
+		read -p "ACLs detectadas. Usar? [y p/ sim] " USE_ACL
 		if [ "$USE_ACL" = "y" ]; then
 			use_acl
+		else
+			> /etc/bind/named.conf.options
 		fi
 	fi
-	> /etc/bind/named.conf.options
 
 	cat >> /etc/bind/named.conf.local << EOF
 zone "$DOMAIN" {
@@ -78,6 +80,7 @@ zone "$DOMAIN" {
 	allow-transfer { $ALLOW_TRANSFER; };
 };
 EOF
+		[ $VIEW_ON -eq 1 ] && sed -i "4,\$s/^/\t/" /etc/bind/named.conf.local
 
 	cat >> /etc/bind/named.conf.options << EOF
 options {
@@ -87,14 +90,14 @@ options {
 	recursion no;
 	allow-recursion { none; };
 	provide-ixfr $IXFR;
-};
+	listen-on { $LISTEN_ON; };
 EOF
 	if [ "$VIEW_ON" -ne 1 ]; then
 			cat >> /etc/bind/named.conf.options << EOF
-listen-on { $LISTEN_ON; };
-allow-query { $ALLOW_QUERY; };
+	allow-query { $ALLOW_QUERY; };
 EOF
 	fi
+	echo "};" >> /etc/bind/named.conf.options
 		
 	cat > /var/cache/bind/db.$DOMAIN << EOF
 \$TTL 8h
@@ -112,10 +115,13 @@ EOF
 ns1	IN	A	$IPDOMAIN
 
 EOF
+	
+		[ $VIEW_ON -eq 1 ] && add_view_zone
 	echo	
 	echo "Configuração autoritativa completa."
 	sleep 1	
 	rm -f config.swp 
+
 use_end_view
 check_cfg
 }
@@ -174,7 +180,7 @@ choice_2() {
 	read -p "IP para encaminhamento 2: " FORWARDER_2IP
 	echo
 	cat >> /etc/bind/named.conf.options << EOF
-options {
+options {  
 	directory "/var/cache/bind";
 	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
 	forward only;
@@ -239,6 +245,14 @@ use_acl() {
 	clean_extra
 }
 
+add_view_zone() {
+	sed -i "1s/^/view \"Default\" {/" /etc/bind/named.conf.default-zones
+	sed -i "2s/^/match-clients { localhost; };\n/" /etc/bind/named.conf.default-zones
+	sed -i "3s/^/\n/" /etc/bind/named.conf.default-zones
+	sed -i "2,\$s/^/\t/" /etc/bind/named.conf.default-zones
+	echo "};" >> /etc/bind/named.conf.default-zones
+}
+
 use_init_view() {
 	if [ $VIEW_ON -eq 1 ]; then
 		clear
@@ -248,13 +262,14 @@ use_init_view() {
 		[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
 		if [ "$USE_ACL" = "y" ]; then
 			use_acl
+		else
+			> /etc/bind/named.conf.options
 		fi
 		
 		cat > '/etc/bind/named.conf.local' << EOF
 view "$VIEW_NAME" {
-	match-clients { "$MATCH_CLIENTS"; };
-	listen-on { "$LISTEN_ON"; };
-	allow-query { "$ALLOW_QUERY"; };
+	match-clients { $MATCH_CLIENTS; };
+	allow-query { $ALLOW_QUERY; };
 EOF
 	fi
 }
