@@ -1,4 +1,4 @@
-# Dns-Bind9
+# dns-bind9
 
 Um script Bash para configurar servidores DNS com Bind9 no Debian, com suporte a servidores autoritativo (com zona reversa, slave e views), cache (com encaminhamento opcional) e encaminhamento. Inclue configurações de ACLs para controle de acesso. **Este projeto não é destinado para ambientes de produção.**
 
