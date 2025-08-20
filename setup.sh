@@ -31,6 +31,7 @@ MATCH_CLIENTS="localhost"
 VAR=""
 ACL_NAME=""
 STAT_CFG=""
+TYPE_EDIT=""
 
 . ./functions.sh
 

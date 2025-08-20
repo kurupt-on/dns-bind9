@@ -17,9 +17,9 @@ update_install_bind() {
 }
 
 choice_0() {
-	
-	use_init_view
 	clear
+	cat /etc/bind/named.conf.options	
+	use_init_view
 	read -p "Nome do Dominio: " DOMAIN
 	read -p "IP do domínio: " IPDOMAIN
 	read -p "Configurar reverso?	[y p/ sim] " REVERSE_CFG
@@ -72,7 +72,8 @@ EOF
 			> /etc/bind/named.conf.options
 		fi
 	else
-			> /etc/bind/named.conf.options
+		echo "teste"
+		#> /etc/bind/named.conf.options
 	fi
 
 	cat >> /etc/bind/named.conf.local << EOF
@@ -181,12 +182,14 @@ choice_2() {
 	read -p "IP para encaminhamento 1: " FORWARDER_1IP
 	read -p "IP para encaminhamento 2: " FORWARDER_2IP
 	echo
-	cat >> /etc/bind/named.conf.options << EOF
+	grep "acl" /etc/bind/named.conf.options &>/dev/null
+	[ $? -eq 0 ] && TYPE_EDIT='>>' || TYPE_EDIT='>'
+	eval "cat $TYPE_EDIT /etc/bind/named.conf.options << EOF
 options {  
-	directory "/var/cache/bind";
+	directory \"/var/cache/bind\";
 	forwarders { $FORWARDER_1IP; $FORWARDER_2IP; };
 	forward only;
-EOF
+EOF"
 	[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar?	[y p/ sim] " USE_ACL
 	if [ "$USE_ACL" = "y" ]; then
 		use_acl
@@ -257,13 +260,14 @@ add_view_zone() {
 
 use_init_view() {
 	if [ $VIEW_ON -eq 1 ]; then
-		clear
+		#clear
 		echo "Configurado para utilizar VIEWs."
 		echo
 		read -p "Nome da VIEW: " VIEW_NAME
-		[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim]" USE_ACL
+		[ $ACL_ON -eq 0 ] || read -p "ACLs detectadas. Usar? [y p/ sim] " USE_ACL
 		if [ "$USE_ACL" = "y" ]; then
 			use_acl
+			cat /etc/bind/named.conf.options
 		else
 			> /etc/bind/named.conf.options
 		fi
@@ -327,7 +331,7 @@ set_view() {
 }
 
 set_cfg_swp() {
-	[ -s config.swp ] && cat config.swp > /etc/bind/named.conf.options && ACL_ON="1"
+	[ -s config.swp ] && cat config.swp > /etc/bind/named.conf.options && ACL_ON="1" 
 	[ "$VIEW" = "Habilitar" ]  && VIEW_ON="0" || VIEW_ON="1"
 	echo "Saindo do modo extra e salvando as configurações."
 	sleep 1
@@ -426,6 +430,7 @@ clean-bind() {
 	echo "Limpando o ambiente."
 	rm -f /var/cache/bind/* &>/dev/null
 	apt remove --purge bind9 -y &>/dev/null
+	rm -f config.swp
 }
 
 clean_extra() {
