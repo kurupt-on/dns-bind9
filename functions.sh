@@ -18,7 +18,6 @@ update_install_bind() {
 
 choice_0() {
 	clear
-	cat /etc/bind/named.conf.options	
 	use_init_view
 	read -p "Nome do Dominio: " DOMAIN
 	read -p "IP do domínio: " IPDOMAIN
@@ -71,9 +70,10 @@ EOF
 		else
 			> /etc/bind/named.conf.options
 		fi
+	elif [ $ACL_ON -eq 0 ]; then
+		> /etc/bind/named.conf.options
 	else
-		echo "teste"
-		#> /etc/bind/named.conf.options
+		>> /etc/bind/named.conf.options
 	fi
 
 	cat >> /etc/bind/named.conf.local << EOF
